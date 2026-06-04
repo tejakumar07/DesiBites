@@ -71,4 +71,15 @@ async function getStatus(id: number) {
   });
 }
 
-export { orderingFood, getOrdersByID, getStatus };
+async function updateOrderStatus(id: number, status: string) {
+  return prisma.order.update({
+    where: {
+      id,
+    },
+    data: {
+      status,
+    },
+  });
+}
+
+export { orderingFood, getOrdersByID, getStatus, updateOrderStatus };

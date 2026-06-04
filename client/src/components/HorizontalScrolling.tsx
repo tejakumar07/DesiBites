@@ -18,7 +18,7 @@ export function HorizontalScrolling() {
   useEffect(() => {
     async function fetchTrendingItems() {
       try {
-        const response = await axios.get("http://localhost:3000/api/menu");
+        const response = await axios.get("/api/menu");
 
         const menuItems = response.data.menu;
 

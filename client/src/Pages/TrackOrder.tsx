@@ -60,7 +60,6 @@ export function TrackOrder() {
     switch (currentStatus) {
       case "Preparing":
         return 1;
-      case "Out for the Delivery": // Matches server typo "Out for the Delivery"
       case "Out for Delivery":
         return 2;
       case "Delivered":
@@ -100,7 +99,6 @@ export function TrackOrder() {
     switch (currentStatus) {
       case "Preparing":
         return "Your meal is sizzlin' in the kitchen! 🍳";
-      case "Out for the Delivery":
       case "Out for Delivery":
         return "Hot food is on the move! Stay close to your door. 🏍️";
       case "Delivered":
@@ -162,7 +160,7 @@ export function TrackOrder() {
               <Clock size={18} weight="bold" />
               <span>
                 {status === "Preparing" && "Est: 15-20 Mins"}
-                {status === "Out for the Delivery" && "Est: 5-10 Mins"}
+                {status === "Out for Delivery" && "Est: 5-10 Mins"}
                 {status === "Delivered" && "Arrived"}
                 {status === "Order Received" && "Est: 30 Mins"}
               </span>

@@ -51,9 +51,9 @@ COPY --from=builder /app/prisma ./prisma
 # Switch to non-root user
 USER appuser
 
-# Cloud Run injects PORT; fall back to 3000 locally
-ENV PORT=3000
-EXPOSE 3000
+# Cloud Run injects PORT; fall back to 8080 locally
+ENV PORT=8080
+EXPOSE 8080
 
 # Health-check — Cloud Run uses HTTP health probes
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \

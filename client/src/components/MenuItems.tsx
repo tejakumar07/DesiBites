@@ -9,6 +9,7 @@ interface MenuItem {
   description: string;
   price: number;
   imageUrl: string;
+  isVeg: boolean;
 }
 
 // Indian standard food label symbols
@@ -74,28 +75,15 @@ export function MenuItems() {
     }, 1000);
   };
 
-  // Helper function to categorize items
-  const isVeg = (name: string, description: string): boolean => {
-    const text = (name + " " + description).toLowerCase();
-    if (text.includes("chicken") || text.includes("meat") || text.includes("fish") || text.includes("egg") || text.includes("burger")) {
-      if (text.includes("paneer") || text.includes("veg")) {
-        return true;
-      }
-      return false;
-    }
-    return true;
-  };
-
   // Filter items based on category and search query
   const filteredItems = items.filter((item) => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           item.description.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const vegStatus = isVeg(item.name, item.description);
     const matchesCategory = 
       activeCategory === "all" ||
-      (activeCategory === "veg" && vegStatus) ||
-      (activeCategory === "non-veg" && !vegStatus);
+      (activeCategory === "veg" && item.isVeg) ||
+      (activeCategory === "non-veg" && !item.isVeg);
       
     return matchesSearch && matchesCategory;
   });
@@ -188,7 +176,6 @@ export function MenuItems() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredItems.map((item) => {
-            const vegStatus = isVeg(item.name, item.description);
             const isAdded = addedItemIds[item.id];
             
             const imageUrl = item.imageUrl && item.imageUrl !== "https://google.com" 
@@ -208,7 +195,7 @@ export function MenuItems() {
                     className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
                   <div className="absolute top-3 left-3 flex gap-2">
-                    {vegStatus ? (
+                    {item.isVeg ? (
                       <span className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 border border-emerald-200 shadow-sm">
                         <VegSymbol />
                         Veg

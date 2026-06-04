@@ -18,6 +18,7 @@ model MenuItem {
   description String
   price       Float
   imageUrl    String
+  isVeg       Boolean @default(true)
 
   orderItems  OrderItem[]
 }

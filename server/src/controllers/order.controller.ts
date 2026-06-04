@@ -4,6 +4,7 @@ import {
   orderingFood,
   getOrdersByID,
   getStatus,
+  updateOrderStatus,
 } from "../services/order.services";
 import { calculateStatus } from "../utils/order.utill";
 
@@ -11,19 +12,23 @@ const orderSchema = z.object({
   name: z.string(),
   address: z.string().min(10).max(100),
   phone: z.string().regex(/^[6-9]\d{9}$/, {
-    error: "Please Enter a valid Mobile Number",
+    message: "Please Enter a valid Mobile Number",
   }),
 
   items: z
     .array(
       z.object({
-        menuItemId: z.number().int().positive().max(25),
+        menuItemId: z.number().int().positive(),
         quantity: z.number().int().positive().max(100),
       }),
     )
     .min(1, {
-      error: "Minimum 1 item is required",
+      message: "Minimum 1 item is required",
     }),
+});
+
+const statusUpdateSchema = z.object({
+  status: z.enum(["Order Received", "Preparing", "Out for Delivery", "Delivered"]),
 });
 
 async function placeOrder(req: Request, res: Response) {
@@ -32,7 +37,8 @@ async function placeOrder(req: Request, res: Response) {
 
     if (!result.success) {
       return res.status(400).json({
-        message: "Check Your Inputs",
+        message: "Invalid inputs",
+        errors: result.error.flatten().fieldErrors,
       });
     }
     const { name, address, phone, items } = req.body;
@@ -79,7 +85,11 @@ async function gettingStatusOfOrder(req: Request, res: Response) {
       });
     }
 
-    const status = calculateStatus(order.createdAt);
+    let status = order.status;
+    if (status === "Order Received") {
+      status = calculateStatus(order.createdAt);
+    }
+
     res.json({
       orderId: order.id,
       status,
@@ -91,4 +101,31 @@ async function gettingStatusOfOrder(req: Request, res: Response) {
   }
 }
 
-export { placeOrder, gettingOrders, gettingStatusOfOrder };
+async function updatingStatusOfOrder(req: Request, res: Response) {
+  try {
+    const id = Number(req.params.id);
+    const result = statusUpdateSchema.safeParse(req.body);
+
+    if (!result.success) {
+      return res.status(400).json({
+        message: "Invalid status value",
+        errors: result.error.flatten().fieldErrors,
+      });
+    }
+
+    const { status } = result.data;
+    const order = await updateOrderStatus(id, status);
+
+    res.status(200).json({
+      message: "Order status updated successfully",
+      order,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to update order status",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+}
+
+export { placeOrder, gettingOrders, gettingStatusOfOrder, updatingStatusOfOrder };

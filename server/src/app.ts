@@ -11,4 +11,8 @@ app.use(express.json());
 app.use("/api/menu", menuRouter);
 app.use("/api/orders", orderRouter);
 
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "OK" });
+});
+
 export default app;
