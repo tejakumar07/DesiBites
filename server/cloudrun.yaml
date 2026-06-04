@@ -1,0 +1,124 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Google Cloud Run — Service Deployment Manifest
+# ──────────────────────────────────────────────────────────────────────────────
+#
+# USAGE:
+#   gcloud run services replace cloudrun.yaml --region=<REGION>
+#
+# PREREQUISITES:
+#   1. Enable required APIs:
+#        gcloud services enable run.googleapis.com \
+#                              cloudbuild.googleapis.com \
+#                              secretmanager.googleapis.com
+#
+#   2. Build & push your image (run from /server directory):
+#        gcloud builds submit \
+#          --tag gcr.io/<PROJECT_ID>/desibites-server:latest .
+#
+#   3. Store secrets in Secret Manager (one-time setup):
+#        echo -n "postgresql://USER:PASS@HOST:5432/DB" | \
+#          gcloud secrets create DATABASE_URL --data-file=-
+#
+#        echo -n "your-jwt-secret" | \
+#          gcloud secrets create JWT_SECRET --data-file=-
+#
+# ──────────────────────────────────────────────────────────────────────────────
+
+apiVersion: serving.knative.dev/v1
+kind: Service
+
+metadata:
+  # Must be unique within the project + region
+  name: desibites-server
+  # Change to your target region, e.g. us-central1, asia-south1
+  namespace: "YOUR_PROJECT_ID"
+  labels:
+    app: desibites
+    environment: production
+  annotations:
+    # Allow unauthenticated requests (public API).
+    # Remove this annotation to require IAM authentication.
+    run.googleapis.com/ingress: all
+
+spec:
+  template:
+    metadata:
+      annotations:
+        # ── Scaling ──────────────────────────────────────────────────────────
+        # Scale to zero when idle (cost savings)
+        autoscaling.knative.dev/minScale: "0"
+        # Maximum concurrent instances
+        autoscaling.knative.dev/maxScale: "10"
+
+        # ── Concurrency ───────────────────────────────────────────────────────
+        # Requests handled per container instance before scaling
+        autoscaling.knative.dev/target: "80"
+
+        # ── VPC / Cloud SQL (optional) ────────────────────────────────────────
+        # Uncomment if you use Cloud SQL:
+        # run.googleapis.com/cloudsql-instances: YOUR_PROJECT_ID:REGION:INSTANCE_NAME
+
+    spec:
+      # ── Service Account ───────────────────────────────────────────────────
+      # Create a dedicated SA with minimal permissions:
+      #   gcloud iam service-accounts create desibites-server-sa
+      serviceAccountName: desibites-server-sa@YOUR_PROJECT_ID.iam.gserviceaccount.com
+
+      # Max concurrent requests per container (Node.js is single-threaded,
+      # keep this moderate unless you use clustering)
+      containerConcurrency: 80
+
+      # Request timeout (max 3600 for Cloud Run)
+      timeoutSeconds: 60
+
+      containers:
+        - name: desibites-server
+          # ── Image ───────────────────────────────────────────────────────────
+          # Replace <PROJECT_ID> and <TAG> before deploying
+          image: gcr.io/YOUR_PROJECT_ID/desibites-server:latest
+
+          # ── Ports ───────────────────────────────────────────────────────────
+          ports:
+            - name: http1
+              containerPort: 3000
+
+          # ── Resources ───────────────────────────────────────────────────────
+          resources:
+            limits:
+              cpu: "1"       # 1 vCPU
+              memory: "512Mi"
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+
+          # ── Environment Variables ────────────────────────────────────────────
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3000"
+
+            # ── Secrets from Secret Manager ──────────────────────────────────
+            # These reference secrets you created in the PREREQUISITES section.
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: DATABASE_URL     # Secret Manager secret name
+                  key: latest            # Version alias
+
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: JWT_SECRET
+                  key: latest
+
+          # ── Liveness / Startup Probes ───────────────────────────────────────
+          # Cloud Run does not support livenessProbe natively in the YAML spec;
+          # health checks are configured via --health-check-* flags or Console.
+          # The HEALTHCHECK in the Dockerfile is used by Docker directly.
+
+  # ── Traffic Splitting ──────────────────────────────────────────────────────
+  # Send 100 % of traffic to the latest revision
+  traffic:
+    - percent: 100
+      latestRevision: true
