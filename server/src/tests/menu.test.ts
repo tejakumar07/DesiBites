@@ -107,13 +107,13 @@ describe("Menu API  —  GET /api/menu/:id", () => {
     expect(res.body.item).toHaveProperty("name", "Butter Chicken");
   });
 
-  it("should return null item when the id does not exist", async () => {
+  it("should return 404 when the id does not exist", async () => {
     prisma.menuItem.findUnique.mockResolvedValue(null);
 
     const res = await request(app).get("/api/menu/999");
 
-    expect(res.status).toBe(200);
-    expect(res.body.item).toBeNull();
+    expect(res.status).toBe(404);
+    expect(res.body.message).toBe("Item not found");
   });
 
   it("should return 500 when a database error occurs", async () => {

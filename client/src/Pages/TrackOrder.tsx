@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { NavBar } from "../components/NavBar";
 import { Footer } from "../components/Footer";
-import axios from "axios";
+import { api } from "../Config";
 import { 
   ClipboardText, 
   CookingPot, 
@@ -31,7 +31,7 @@ export function TrackOrder() {
 
     async function fetchStatus() {
       try {
-        const response = await axios.get(`/api/orders/${id}/status`);
+        const response = await api.get(`/api/orders/${id}/status`);
         setStatus(response.data?.status ?? "Order Received");
         setError(null);
       } catch (err) {

@@ -1,4 +1,4 @@
-import axios from "axios";
+import { api } from "../Config";
 import { useEffect, useState } from "react";
 import { useCart } from "../context/CartContext";
 import { MagnifyingGlass, Plus } from "@phosphor-icons/react";
@@ -46,7 +46,7 @@ export function MenuItems() {
   useEffect(() => {
     async function getMenuItems() {
       try {
-        const response = await axios.get("/api/menu");
+        const response = await api.get("/api/menu");
         const menuItems = Array.isArray(response.data)
           ? response.data
           : response.data?.menu;

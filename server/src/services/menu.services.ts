@@ -1,4 +1,3 @@
-import { Request, Response } from "express";
 import { prisma } from "../config/prisma";
 
 async function getMenuItems() {

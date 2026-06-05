@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { NavBar } from "../components/NavBar";
 import { Footer } from "../components/Footer";
-import axios from "axios";
+import { api } from "../Config";
 import { ArrowLeft, Printer, ShieldCheck, ShoppingBagOpen, MapPin, Phone, User, Calendar } from "@phosphor-icons/react";
 
 interface MenuItem {
@@ -47,7 +47,7 @@ export function OrderDetails() {
 
     async function fetchOrderDetails() {
       try {
-        const response = await axios.get(`/api/orders/${id}`);
+        const response = await api.get(`/api/orders/${id}`);
         setOrder(response.data?.order ?? null);
         setError(null);
       } catch (err) {

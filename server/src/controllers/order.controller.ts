@@ -61,9 +61,10 @@ async function gettingOrders(req: Request, res: Response) {
     const order = await getOrdersByID(id);
 
     if (!order) {
-      res.status(400).json({
-        message: "Orders Not Found",
+      res.status(404).json({
+        message: "Order Not Found",
       });
+      return;
     }
     res.json({ order });
   } catch (error) {

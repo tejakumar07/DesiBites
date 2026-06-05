@@ -223,13 +223,13 @@ describe("Order API  —  GET /api/orders/:id  (Get Order)", () => {
     expect(res.body.order).toHaveProperty("totalPrice", 627);
   });
 
-  it("should return 400 when order is not found", async () => {
+  it("should return 404 when order is not found", async () => {
     prisma.order.findUnique.mockResolvedValue(null);
 
     const res = await request(app).get("/api/orders/999");
 
-    expect(res.status).toBe(400);
-    expect(res.body.message).toBe("Orders Not Found");
+    expect(res.status).toBe(404);
+    expect(res.body.message).toBe("Order Not Found");
   });
 
   it("should return 500 when a database error occurs", async () => {

@@ -1,4 +1,4 @@
-import axios from "axios";
+import { api } from "../Config";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -18,7 +18,7 @@ export function HorizontalScrolling() {
   useEffect(() => {
     async function fetchTrendingItems() {
       try {
-        const response = await axios.get("/api/menu");
+        const response = await api.get("/api/menu");
 
         const menuItems = response.data.menu;
 

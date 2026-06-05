@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { NavBar } from "../components/NavBar";
 import { Footer } from "../components/Footer";
-import axios from "axios";
+import { api } from "../Config";
 import { ArrowLeft, Cardholder, ShieldCheck, Spinner } from "@phosphor-icons/react";
 
 export function CheckoutPage() {
@@ -70,7 +70,7 @@ export function CheckoutPage() {
         quantity: item.quantity,
       }));
 
-      const response = await axios.post("/api/orders", {
+      const response = await api.post("/api/orders", {
         name,
         address,
         phone,
